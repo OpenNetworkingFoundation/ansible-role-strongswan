@@ -1,0 +1,40 @@
+---
+# strongswan defaults/main.yml
+#
+# SPDX-FileCopyrightText: © 2020 Open Networking Foundation <support@opennetworking.org>
+# SPDX-License-Identifier: Apache-2.0
+
+# Default values set here work with Google Cloud VPN
+#
+# Upstream docs:
+#   https://wiki.strongswan.org/projects/strongswan/wiki/ConfigurationFiles
+#   https://wiki.strongswan.org/projects/strongswan/wiki/IpsecConf
+#   https://wiki.strongswan.org/projects/strongswan/wiki/ConnSection
+
+# How long the keying channel of a connection (ISAKMP or IKE SA) should last
+strongswan_conf_phase1_lifetime: "600m"
+
+# How long a particular instance of a connection should last
+strongswan_conf_phase2_lifetime: "180m"
+
+# Which protocol should be used to initialize the connection
+# Acceptable values are ike, ikev1, or ikev2
+strongswan_conf_key_exchange: "ikev2"
+
+# IKE/ISAKMP SA encryption/authentication algorithms
+strongswan_conf_ike_cipher: "aes256gcm16-sha512-modp4096"
+
+# ESP encryption/authentication algorithms
+strongswan_conf_esp_cipher: "aes256gcm16-sha512-modp8192"
+
+# How the two security gateways should authenticate each other
+# NOTE: only psk is supported
+strongswan_conf_auth_type: "psk"
+
+# Handle routes in strongSwan or not
+# Set no if VPNs are route based
+strongswan_conf_install_routes: false
+
+# List of connections to configure
+# See README.md for the examples
+strongswan_conf_connections: []

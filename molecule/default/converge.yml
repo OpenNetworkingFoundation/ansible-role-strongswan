@@ -1,0 +1,36 @@
+---
+# strongswan molecule/default/verify.yml
+#
+# SPDX-FileCopyrightText: © 2020 Open Networking Foundation <support@opennetworking.org>
+# SPDX-License-Identifier: Apache-2.0
+
+- name: Converge
+  hosts: all
+  vars:
+    strongswan_conf_connections:
+      - name: tunnel1
+        psk: secret
+        vti:
+          local: 169.254.0.2/30
+          remote: 169.254.0.1/30
+          mark: "100"
+        left: 10.0.0.3
+        leftid: 128.105.144.189
+        left_subnets: 0.0.0.0/0
+        right: 34.124.6.243
+        right_subnets: 0.0.0.0/0
+      - name: tunnel2
+        psk: secret
+        vti:
+          local: 169.254.0.6/30
+          remote: 169.254.0.5/30
+          mark: "200"
+        left: 10.0.0.3
+        leftid: 128.105.144.189
+        left_subnets: 0.0.0.0/0
+        right: 34.104.68.245
+        right_subnets: 0.0.0.0/0
+  tasks:
+    - name: "Include strongswan"
+      include_role:
+        name: "strongswan"

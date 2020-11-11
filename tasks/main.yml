@@ -1,0 +1,36 @@
+---
+# strongswan tasks/main.yml
+#
+# SPDX-FileCopyrightText: © 2020 Open Networking Foundation <support@opennetworking.org>
+# SPDX-License-Identifier: Apache-2.0
+
+- name: Include OS-specific vars
+  include_vars: "{{ ansible_os_family }}.yml"
+
+- name: Include OS-specific tasks
+  include_tasks: "{{ ansible_os_family }}.yml"
+
+- name: Copy VTI configuration and script
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - {src: "vti.conf", dest: "/etc/strongswan.d/vti.conf", mode: 0644}
+    - {src: "ipsec-vti.sh", dest: "/etc/ipsec.d/ipsec-vti.sh", mode: a+x}
+  when: not strongswan_conf_install_routes
+
+- name: Create ipsec configurations from template
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0640
+  with_items:
+    - {src: "ipsec.secrets.j2", dest: "/etc/ipsec.secrets"}
+    - {src: "ipsec.conf.j2", dest: "/etc/ipsec.conf"}
+  notify:
+    - restart-ipsec

@@ -1,0 +1,32 @@
+---
+# strongswan molecule/default/verify.yml
+#
+# SPDX-FileCopyrightText: © 2020 Open Networking Foundation <support@opennetworking.org>
+# SPDX-License-Identifier: Apache-2.0
+
+- name: Verify
+  hosts: all
+  vars:
+  tasks:
+    - name: Gather package facts
+      package_facts:
+        manager: auto
+
+    - name: Verify package is installed
+      assert:
+        that: "'{{ item }}' in ansible_facts.packages"
+      with_items:
+        - strongswan
+
+    - name: Verify ipsec connections are configured
+      command: ipsec status
+      register: ipsec_status
+      changed_when: false
+      failed_when: item not in ipsec_status.stdout
+      with_items:
+        - tunnel1
+        - tunnel2
+
+    - name: Debug results
+      debug:
+        var: ipsec_status

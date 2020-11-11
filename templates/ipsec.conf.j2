@@ -1,0 +1,40 @@
+# strongswan templates/ipsec.conf - {{ ansible_managed }}
+#
+# SPDX-FileCopyrightText: © 2020 Open Networking Foundation <support@opennetworking.org>
+# SPDX-License-Identifier: Apache-2.0
+
+# basic configuration
+config setup
+    # strictcrlpolicy=yes
+    # uniqueids = no
+
+conn %default
+    ikelifetime={{ strongswan_conf_phase1_lifetime }}
+    keylife={{ strongswan_conf_phase2_lifetime }}
+    lifetime={{ strongswan_conf_phase2_lifetime }}
+    rekeymargin=3m
+    keyingtries=3
+    keyexchange={{ strongswan_conf_key_exchange }}
+    mobike=no
+    ike={{ strongswan_conf_ike_cipher }}
+    esp={{ strongswan_conf_esp_cipher }}
+    authby={{ strongswan_conf_auth_type }}
+
+{% for conn in strongswan_conf_connections %}
+conn {{ conn.name }}
+{% if conn.vti is defined %}
+    leftupdown="/etc/ipsec.d/ipsec-vti.sh -ln {{ conn.name }} -ll {{ conn.vti.local }} -lr {{ conn.vti.remote }} -m {{ conn.vti.mark }}"
+    mark={{ conn.vti.mark }}
+{% endif %}
+    left={{ conn.left }}
+    leftid={{ conn.leftid }}
+    leftsubnet={{ conn.left_subnets }}
+    leftauth={{ strongswan_conf_auth_type }}
+    right={{ conn.right }}
+    rightsubnet={{ conn.right_subnets }}
+    rightauth={{ strongswan_conf_auth_type }}
+    auto=start
+    type=tunnel
+    dpdaction=restart
+    closeaction=restart
+{% endfor %}
