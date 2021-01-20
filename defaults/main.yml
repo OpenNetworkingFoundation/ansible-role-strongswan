@@ -31,6 +31,13 @@ strongswan_conf_esp_cipher: "aes256gcm16-sha512-modp8192"
 # NOTE: only psk is supported
 strongswan_conf_auth_type: "psk"
 
+# What operation should be done automatically at IPsec startup
+# Acceptable values are add, start, or route
+strongswan_conf_auto: "add"
+
+# Whether rekeying of an IKE_SA should also reauthenticate the peer
+strongswan_conf_reauth: "no"
+
 # Handle routes in strongSwan or not
 # Set no if VPNs are route based
 strongswan_conf_install_routes: false

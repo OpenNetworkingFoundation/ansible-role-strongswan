@@ -8,96 +8,47 @@
 set -o nounset
 set -o errexit
 
-echo "${PLUTO_VERB}" >> /tmp/yoyo
-while [[ $# -gt 1 ]]; do
-	case ${1} in
-		-ln|--link-name)
-			TUNNEL_NAME="${2}"
-			TUNNEL_PHY_INTERFACE="${PLUTO_INTERFACE}"
-			shift
-			;;
-		-ll|--link-local)
-			TUNNEL_LOCAL_ADDRESS="${2}"
-			TUNNEL_LOCAL_ENDPOINT="${PLUTO_ME}"
-			shift
-			;;
-		-lr|--link-remote)
-			TUNNEL_REMOTE_ADDRESS="${2}"
-			TUNNEL_REMOTE_ENDPOINT="${PLUTO_PEER}"
-			shift
-			;;
-		-m|--mark)
-			TUNNEL_MARK="${2}"
-			shift
-			;;
-		-r|--static-route)
-			TUNNEL_STATIC_ROUTE="${2}"
-			shift
-			;;
-		*)
-			echo "${0}: Unknown argument \"${1}\"" >&2
-			;;
-	esac
-	shift
-done
+IP=$(which ip)
 
-command_exists() {
-	type "$1" >&2 2>&2
-}
+PLUTO_MARK_OUT_ARR=(${PLUTO_MARK_OUT//// })
+PLUTO_MARK_IN_ARR=(${PLUTO_MARK_IN//// })
 
-create_interface() {
-	{
-		echo "ip link add ${TUNNEL_NAME} type vti local ${TUNNEL_LOCAL_ENDPOINT} remote ${TUNNEL_REMOTE_ENDPOINT} key ${TUNNEL_MARK}"
-		echo "ip addr add ${TUNNEL_LOCAL_ADDRESS} remote ${TUNNEL_REMOTE_ADDRESS} dev ${TUNNEL_NAME}"
-		echo "ip link set ${TUNNEL_NAME} up mtu 1387"
-	} >> /tmp/yoyo
-	ip link add "${TUNNEL_NAME}" type vti local "${TUNNEL_LOCAL_ENDPOINT}" remote "${TUNNEL_REMOTE_ENDPOINT}" key "${TUNNEL_MARK}"
-	ip addr add "${TUNNEL_LOCAL_ADDRESS}" remote "${TUNNEL_REMOTE_ADDRESS}" dev "${TUNNEL_NAME}"
-	ip link set "${TUNNEL_NAME}" up mtu 1387
-}
+VTI_TUNNEL_ID=${1}
+VTI_REMOTE=${2}
+VTI_LOCAL=${3}
 
-configure_sysctl() {
-	sysctl -w net.ipv4.ip_forward=1
-	sysctl -w net.ipv4.conf."${TUNNEL_NAME}".rp_filter=2
-	sysctl -w net.ipv4.conf."${TUNNEL_NAME}".disable_policy=1
-	sysctl -w net.ipv4.conf."${TUNNEL_PHY_INTERFACE}".disable_xfrm=1
-	sysctl -w net.ipv4.conf."${TUNNEL_PHY_INTERFACE}".disable_policy=1
-}
-
-add_route() {
-	IFS=',' read -ra route <<< "${TUNNEL_STATIC_ROUTE}"
-    	for i in "${route[@]}"; do
-	    ip route add "${i}" dev "${TUNNEL_NAME}" metric "${TUNNEL_MARK}"
-	done
-}
-
-cleanup() {
-        IFS=',' read -ra route <<< "${TUNNEL_STATIC_ROUTE}"
-        for i in "${route[@]}"; do
-            ip route del "${i}" dev "${TUNNEL_NAME}" metric "${TUNNEL_MARK}"
-        done
-}
-
-delete_interface() {
-	ip link set "${TUNNEL_NAME}" down
-	ip link del "${TUNNEL_NAME}"
-}
-
-# main execution starts here
-
-command_exists ip || echo "ERROR: ip command is required to execute the script, check if you are running as root, mostly to do with path, /sbin/" >&2 2>&2
-command_exists iptables || echo "ERROR: iptables command is required to execute the script, check if you are running as root, mostly to do with path, /sbin/" >&2 2>&2
-command_exists sysctl || echo "ERROR: sysctl command is required to execute the script, check if you are running as root, mostly to do with path, /sbin/" >&2 2>&2
+LOCAL_IF="${PLUTO_INTERFACE}"
+VTI_IF="${VTI_TUNNEL_ID}"
+# GCP's MTU is 1460, so it's hardcoded
+GCP_MTU="1460"
+# ipsec overhead is 73 bytes, we need to compute new mtu.
+VTI_MTU=$((GCP_MTU-73))
 
 case "${PLUTO_VERB}" in
-	up-client)
-		create_interface
-		configure_sysctl
-		add_route
-        echo "A"
-		;;
-	down-client)
-		cleanup
-		delete_interface
-		;;
+    up-client)
+        ${IP} link add ${VTI_IF} type vti local ${PLUTO_ME} remote ${PLUTO_PEER} okey ${PLUTO_MARK_OUT_ARR[0]} ikey ${PLUTO_MARK_IN_ARR[0]}
+        ${IP} addr add ${VTI_LOCAL} remote ${VTI_REMOTE} dev "${VTI_IF}"
+        ${IP} link set ${VTI_IF} up mtu ${VTI_MTU}
+
+        # Disable IPSEC Policy
+        sysctl -w net.ipv4.conf.${VTI_IF}.disable_policy=1
+
+        # Enable loosy source validation, if possible. Otherwise disable validation.
+        sysctl -w net.ipv4.conf.${VTI_IF}.rp_filter=2 || sysctl -w net.ipv4.conf.${VTI_IF}.rp_filter=0
+
+        # If you would like to use VTI for policy-based you shoud take care of routing by yourselv, e.x.
+        #if [[ "${PLUTO_PEER_CLIENT}" != "0.0.0.0/0" ]]; then
+        #    ${IP} r add "${PLUTO_PEER_CLIENT}" dev "${VTI_IF}"
+        #fi
+        ;;
+    down-client)
+        ${IP} tunnel del "${VTI_IF}"
+        ;;
 esac
+
+# Enable IPv4 forwarding
+sysctl -w net.ipv4.ip_forward=1
+
+# Disable IPSEC Encryption on local net
+sysctl -w net.ipv4.conf.${LOCAL_IF}.disable_xfrm=1
+sysctl -w net.ipv4.conf.${LOCAL_IF}.disable_policy=1

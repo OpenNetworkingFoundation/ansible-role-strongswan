@@ -37,7 +37,6 @@ strongswan_conf_connections:
     vti:
       local: 169.254.0.2/30
       remote: 169.254.0.1/30
-      mark: "100"
     psk: secret
     left: 10.0.0.3
     leftid: 128.105.144.189

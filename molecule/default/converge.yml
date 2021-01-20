@@ -7,13 +7,13 @@
 - name: Converge
   hosts: all
   vars:
+    strongswan_conf_auto: "start"
     strongswan_conf_connections:
       - name: tunnel1
         psk: secret
         vti:
           local: 169.254.0.2/30
           remote: 169.254.0.1/30
-          mark: "100"
         left: 10.0.0.3
         leftid: 128.105.144.189
         left_subnets: 0.0.0.0/0
@@ -24,7 +24,6 @@
         vti:
           local: 169.254.0.6/30
           remote: 169.254.0.5/30
-          mark: "200"
         left: 10.0.0.3
         leftid: 128.105.144.189
         left_subnets: 0.0.0.0/0

@@ -19,12 +19,15 @@ conn %default
     ike={{ strongswan_conf_ike_cipher }}
     esp={{ strongswan_conf_esp_cipher }}
     authby={{ strongswan_conf_auth_type }}
+    auto={{ strongswan_conf_auto }}
+    reauth={{ strongswan_conf_reauth }}
+    type=tunnel
+    dpdaction=restart
 
 {% for conn in strongswan_conf_connections %}
 conn {{ conn.name }}
 {% if conn.vti is defined %}
-    leftupdown="/etc/ipsec.d/ipsec-vti.sh -ln {{ conn.name }} -ll {{ conn.vti.local }} -lr {{ conn.vti.remote }} -m {{ conn.vti.mark }}"
-    mark={{ conn.vti.mark }}
+    leftupdown="/etc/ipsec.d/ipsec-vti.sh {{ conn.name }} {{ conn.vti.remote }} {{ conn.vti.local }}"
 {% endif %}
     left={{ conn.left }}
     leftid={{ conn.leftid }}
@@ -33,8 +36,5 @@ conn {{ conn.name }}
     right={{ conn.right }}
     rightsubnet={{ conn.right_subnets }}
     rightauth={{ strongswan_conf_auth_type }}
-    auto=start
-    type=tunnel
-    dpdaction=restart
-    closeaction=restart
+    mark=%unique
 {% endfor %}
