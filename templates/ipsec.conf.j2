@@ -22,7 +22,7 @@ conn %default
     auto={{ strongswan_conf_auto }}
     reauth={{ strongswan_conf_reauth }}
     type=tunnel
-    dpdaction=restart
+    dpdaction={{ strongswan_conf_dpdaction }}
 
 {% for conn in strongswan_conf_connections %}
 conn {{ conn.name }}

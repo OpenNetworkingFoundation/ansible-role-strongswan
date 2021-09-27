@@ -33,7 +33,8 @@ strongswan_conf_auth_type: "psk"
 
 # What operation should be done automatically at IPsec startup
 # Acceptable values are add, start, or route
-strongswan_conf_auto: "add"
+strongswan_conf_auto: "route"
+strongswan_conf_dpdaction: "clear"
 
 # Whether rekeying of an IKE_SA should also reauthenticate the peer
 strongswan_conf_reauth: "no"
