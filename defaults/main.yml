@@ -35,6 +35,7 @@ strongswan_conf_auth_type: "psk"
 # Acceptable values are add, start, or route
 strongswan_conf_auto: "route"
 strongswan_conf_dpdaction: "clear"
+strongswan_conf_keyingtries: "3"
 
 # Whether rekeying of an IKE_SA should also reauthenticate the peer
 strongswan_conf_reauth: "no"

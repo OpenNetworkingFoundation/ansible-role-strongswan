@@ -13,7 +13,7 @@ conn %default
     keylife={{ strongswan_conf_phase2_lifetime }}
     lifetime={{ strongswan_conf_phase2_lifetime }}
     rekeymargin=3m
-    keyingtries=3
+    keyingtries={{ strongswan_conf_keyingtries }}
     keyexchange={{ strongswan_conf_key_exchange }}
     mobike=no
     ike={{ strongswan_conf_ike_cipher }}
@@ -36,5 +36,7 @@ conn {{ conn.name }}
     right={{ conn.right }}
     rightsubnet={{ conn.right_subnets }}
     rightauth={{ strongswan_conf_auth_type }}
+{% if conn.vti is defined %}
     mark=%unique
+{% endif %}
 {% endfor %}
