@@ -23,6 +23,7 @@ conn %default
     reauth={{ strongswan_conf_reauth }}
     type=tunnel
     dpdaction={{ strongswan_conf_dpdaction }}
+    closeaction={{ strongswan_conf_closeaction }}
 
 {% for conn in strongswan_conf_connections %}
 conn {{ conn.name }}

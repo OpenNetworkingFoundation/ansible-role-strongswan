@@ -5,7 +5,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 - name: Include OS-specific vars
-  include_vars: "{{ ansible_os_family }}.yml"
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution }}_{{ ansible_distribution_version }}.yml"
+    - "{{ ansible_distribution }}.yml"
+    - "{{ ansible_os_family }}.yml"
 
 - name: Include OS-specific tasks
   include_tasks: "{{ ansible_os_family }}.yml"
@@ -14,6 +18,7 @@
   copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
+    backup: true
     owner: root
     group: root
     mode: "{{ item.mode }}"
@@ -26,6 +31,7 @@
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
+    backup: true
     owner: root
     group: root
     mode: 0640

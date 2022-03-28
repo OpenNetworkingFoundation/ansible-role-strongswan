@@ -1,6 +1,6 @@
 # strongSwan
 
-strongSwan IPSec VPN
+strongSwan IPSec VPN daemon
 
 
 ## Requirements

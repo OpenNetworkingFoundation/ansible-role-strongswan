@@ -7,7 +7,6 @@
 - name: Converge
   hosts: all
   vars:
-    strongswan_conf_auto: "start"
     strongswan_conf_connections:
       - name: tunnel1
         psk: secret
@@ -15,9 +14,10 @@
           local: 169.254.0.2/30
           remote: 169.254.0.1/30
         left: 10.0.0.3
-        leftid: 128.105.144.189
+        leftid: 10.0.0.3
         left_subnets: 0.0.0.0/0
-        right: 34.124.6.243
+        right: 172.16.0.3
+        rightid: 172.16.0.3
         right_subnets: 0.0.0.0/0
       - name: tunnel2
         psk: secret
@@ -25,9 +25,10 @@
           local: 169.254.0.6/30
           remote: 169.254.0.5/30
         left: 10.0.0.3
-        leftid: 128.105.144.189
+        leftid: 10.0.0.3
         left_subnets: 0.0.0.0/0
-        right: 34.104.68.245
+        right: 172.16.0.4
+        rightid: 172.16.0.3
         right_subnets: 0.0.0.0/0
   tasks:
     - name: "Include strongswan"
