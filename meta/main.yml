@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 galaxy_info:
+  role_name: strongswan
   author: Open Networking Foundation
   description: strongSwan IPSec VPN
   company: Open Networking Foundation
