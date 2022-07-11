@@ -29,6 +29,7 @@ conn %default
 conn {{ conn.name }}
 {% if conn.vti is defined %}
     leftupdown="/etc/ipsec.d/ipsec-vti.sh {{ conn.name }} {{ conn.vti.remote }} {{ conn.vti.local }}"
+    mark=%unique
 {% endif %}
     left={{ conn.left }}
     leftid={{ conn.leftid }}
@@ -37,7 +38,10 @@ conn {{ conn.name }}
     right={{ conn.right }}
     rightsubnet={{ conn.right_subnets }}
     rightauth={{ strongswan_conf_auth_type }}
-{% if conn.vti is defined %}
-    mark=%unique
+{% if conn.dpdaction is defined %}
+    dpdaction={{ conf.dpdaction }}
+{% endif %}
+{% if conn.closeaction is defined %}
+    closeaction={{ conf.closeaction }}
 {% endif %}
 {% endfor %}
