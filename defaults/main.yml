@@ -37,7 +37,7 @@ strongswan_conf_auto: "route"
 strongswan_conf_keyingtries: "3"
 
 # Actions that are taken when a connection drops
-# Acceptable values: clear, hold, restart
+# Acceptable values: none, clear, hold, restart
 strongswan_conf_dpdaction: "clear"
 strongswan_conf_closeaction: "clear"
 
